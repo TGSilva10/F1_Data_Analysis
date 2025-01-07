@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="F1 Analysis.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1888"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="status" custom_title="0" dock_id="1" table="4,6:mainstatus"/><dock_state state="000000ff00000000fd00000001000000020000053600000374fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000005360000011500ffffff000002ba0000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="status" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="62"/><column index="2" value="300"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1*">-- Ranking de Pilotos Campeões por Temporada
+
+SELECT 
+    r.year,
+    d.driverRef AS driver_name,
+    d.nationality,
+    ds.points,
+    ds.position
+FROM driver_standings ds
+JOIN drivers d ON ds.driverId = d.driverId
+JOIN races r ON ds.raceId = r.raceId
+WHERE ds.position = 1  -- Apenas os campeões
+ORDER BY r.year;
+
+-- Melhor Circuito para um Piloto Específico (Lewis Hamilton, Max Verstappen, Charles Leclerc)
+
+SELECT c.name AS circuit_name, 
+	COUNT(*) AS wins
+FROM results as r
+JOIN races as ra ON r.raceId = ra.raceId  -- Associar as races para pegar circuitId
+JOIN circuits as c ON ra.circuitId = c.circuitId  -- Associar o circuito
+JOIN drivers as d ON r.driverId = d.driverId  -- Associar o piloto
+WHERE r.positionOrder = 1 AND d.driverRef = 'hamilton'  -- Vitórias do Hamilton
+GROUP BY c.name
+ORDER BY wins DESC
+LIMIT 5;
+
+SELECT c.name AS circuit_name, 
+	COUNT(*) AS wins
+FROM results as r
+JOIN races as ra ON r.raceId = ra.raceId  -- Associar as races para pegar circuitId
+JOIN circuits as c ON ra.circuitId = c.circuitId  -- Associar o circuito
+JOIN drivers as d ON r.driverId = d.driverId  -- Associar o piloto
+WHERE r.positionOrder = 1 AND d.driverRef = 'max_verstappen'  -- Vitórias do Verstappen
+GROUP BY c.name
+ORDER BY wins DESC
+LIMIT 5;
+
+SELECT c.name AS circuit_name, COUNT(*) AS wins
+FROM results as r
+JOIN races as ra ON r.raceId = ra.raceId  -- Associar as races para pegar circuitId
+JOIN circuits as c ON ra.circuitId = c.circuitId  -- Associar o circuito
+JOIN drivers as d ON r.driverId = d.driverId  -- Associar o piloto
+WHERE r.positionOrder = 1 AND d.driverRef = 'leclerc'  -- Vitórias do Leclerc
+GROUP BY c.name
+ORDER BY wins DESC
+LIMIT 5;
+
+-- Melhores Construtores por Década 
+
+SELECT 
+    c.name AS constructor_name,
+    COUNT(r.positionOrder) AS wins,
+    (ra.year / 10) * 10 AS decade
+FROM results r
+JOIN constructors c ON r.constructorId = c.constructorId  -- Associar construtores
+JOIN races ra ON r.raceId = ra.raceId  -- Associar corridas com o ano
+WHERE r.positionOrder = 1  -- Apenas vitórias
+GROUP BY c.name, decade
+ORDER BY decade, wins DESC</sql><current_tab id="0"/></tab_sql></sqlb_project>
