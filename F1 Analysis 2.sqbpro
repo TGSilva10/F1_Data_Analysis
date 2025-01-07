@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="F1_Analysis.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1888"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="circuits" custom_title="0" dock_id="1" table="4,8:maincircuits"/><dock_state state="000000ff00000000fd00000001000000020000000000000000fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000010100ffffff000000000000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1*">-- Campeão com Maior Número de Poles
+
+SELECT d.driverRef AS driver_name, COUNT(*) AS pole_positions
+FROM qualifying q
+JOIN drivers d ON q.driverId = d.driverId
+WHERE q.position = 1  -- Pole position
+GROUP BY d.driverRef
+ORDER BY pole_positions DESC
+LIMIT 1;  -- Campeão com o maior número de poles
+
+-- Comparação de Construtores por Décadas
+
+SELECT 
+    c.name AS constructor_name,
+    COUNT(r.positionOrder) AS wins,
+    (ra.year / 10) * 10 AS decade
+FROM results r
+JOIN constructors c ON r.constructorId = c.constructorId
+JOIN races ra ON r.raceId = ra.raceId
+WHERE r.positionOrder = 1  -- Apenas vitórias
+GROUP BY c.name, decade
+ORDER BY decade, wins DESC;
+
+-- Melhor Desempenho em Circuitos Europeus vs Não-Europeus
+
+SELECT 
+    CASE WHEN c.country IN ('Italy', 'Germany', 'France', 'Spain', 'United Kingdom', 'Netherlands', 'Belgium', 'Hungary') 
+         THEN 'Europe'
+         ELSE 'Non-Europe' 
+    END AS region,
+    COUNT(r.positionOrder) AS wins
+FROM results r
+JOIN races ra ON r.raceId = ra.raceId
+JOIN circuits c ON ra.circuitId = c.circuitId
+WHERE r.positionOrder = 1  -- Apenas vitórias
+GROUP BY region;
+
+
+-- Análise de Desempenho ao Longo do Tempo
+
+
+-- Para os pilotos 
+
+SELECT 
+    d.driverRef AS driver_name,
+    ra.year,
+    COUNT(r.positionOrder) AS wins
+FROM results r
+JOIN drivers d ON r.driverId = d.driverId
+JOIN races ra ON r.raceId = ra.raceId
+WHERE r.positionOrder = 1  -- Apenas vitórias
+GROUP BY d.driverRef, ra.year
+ORDER BY d.driverRef, ra.year;
+
+-- Para os construtores
+
+SELECT 
+    c.name AS constructor_name,
+    ra.year,
+    COUNT(r.positionOrder) AS wins
+FROM results r
+JOIN constructors c ON r.constructorId = c.constructorId
+JOIN races ra ON r.raceId = ra.raceId
+WHERE r.positionOrder = 1  -- Apenas vitórias
+GROUP BY c.name, ra.year
+ORDER BY c.name, ra.year;
+
+</sql><current_tab id="0"/></tab_sql></sqlb_project>
